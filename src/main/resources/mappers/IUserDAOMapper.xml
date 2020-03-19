@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.baizhi.dao.IUserDAO">
+    <!-- <cache type="com.baizhi.cache.UserDefineRedisCache">
+         <property name="timeout" value="60"/>
+     </cache>-->
+    <!--用户插入-->
+    <insert id="saveUser" parameterType="User" useGeneratedKeys="true" keyProperty="id">
+        insert into t_user(name,password,sex,birthDay,photo,email)values(#{name},#{password},#{sex},#{birthDay},#{photo},#{email})
+    </insert>
+
+    <!--用户名和密码查询-->
+    <select id="queryUserByNameAndPassword" parameterType="User" resultType="User">
+        SELECT ID,NAME,SEX,PASSWORD,BIRTHDAY,PHOTO,EMAIL FROM t_user WHERE NAME = #{name} AND PASSWORD = #{password}
+    </select>
+    <!--通过用户id查询-->
+    <select id="queryUserById" parameterType="java.lang.Integer" resultType="User">
+         SELECT ID,NAME,SEX,PASSWORD,BIRTHDAY,PHOTO,EMAIL FROM t_user WHERE ID = #{id}
+    </select>
+    <!--通过id删除-->
+    <delete id="deleteByUserId">
+        DELETE FROM t_user WHERE ID IN
+        <foreach collection="array" open="(" item="ids" separator="," close=")">#{ids}</foreach>
+    </delete>
+    <!--分页条件查询-->
+    <select id="queryUserByPage" resultType="User">
+        select id,name,sex,birthDay,photo ,email from
+        t_user <if test="column !=null">where ${column} like '%${value}%'</if> limit ${pageSize} offset
+        ${(pageNow-1)*pageSize}
+    </select>
+
+    <!--数量查询-->
+    <select id="queryCount" resultType="int">
+        select count(*) from t_user
+        <if test="column != null">where ${column} like'%${value}%'</if>
+    </select>
+
+    <!--更改用户信息-->
+    <update id="updateUser" parameterType="User">
+        update t_user
+        <set>
+            <if test="name != null">name =#{name},</if>
+            <if test="sex !=null">sex = #{sex},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="birthDay !=null">birthDay = #{birthDay},</if>
+            <if test="photo !=null">photo = #{photo},</if>
+            <if test="email!=null">email = #{email}</if>
+        </set>
+        where id = #{id}
+    </update>
+</mapper>
