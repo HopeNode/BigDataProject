@@ -42,7 +42,6 @@ public class UserService implements IUserService {
     public List<User> queryUserByPage(Integer pageNow, Integer pageSize, String column, Object value) {
         return IUserDAO.queryUserByPage(pageNow, pageSize, column, value);
     }
-
     @AddCache
     @SlaveDB
     @Transactional(propagation = Propagation.SUPPORTS)

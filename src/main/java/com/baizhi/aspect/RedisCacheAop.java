@@ -54,12 +54,14 @@ public class RedisCacheAop {
         }
         //判断缓存中key是否存在
         if (hashOperations.hasKey(nameSpace, sb)) { //存在
+            System.out.println("----------获得缓存数据--------------");
             LOGGER.debug("----------获得缓存数据--------------");
             Object o = hashOperations.get(nameSpace, sb);
             return o;
         }
         //否则 查询数据库
         Object proceed = proceedingJoinPoint.proceed();
+        System.out.println("----------添加缓存--------------");
         LOGGER.debug("----------添加缓存--------------");
         //添加缓存
         hashOperations.put(nameSpace, sb, proceed);
@@ -70,6 +72,7 @@ public class RedisCacheAop {
     public void after(JoinPoint joinPoint) {
         //获得key
         String name = joinPoint.getTarget().getClass().getName();
+        System.out.println("-----------清除缓冲数据----------");
         LOGGER.debug("-----------清除缓冲数据----------");
         stringRedisTemplate.delete(name);
     }

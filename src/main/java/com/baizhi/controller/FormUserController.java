@@ -1,6 +1,7 @@
 package com.baizhi.controller;
 
 import com.baizhi.entities.User;
+import com.baizhi.service.IFastDfsPhotoUploadService;
 import com.baizhi.service.IUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -28,16 +29,16 @@ public class FormUserController {
 
     @Autowired
     private IUserService userService;
+    @Autowired
+    private IFastDfsPhotoUploadService iFastDfsPhotoUploadService;
 
     @PostMapping(value = "/registerUser")
     public User registerUser(User user,
                              @RequestParam(value = "multipartFile", required = false) MultipartFile multipartFile) throws IOException {
         if (multipartFile != null) {
-            String fileName = multipartFile.getOriginalFilename();
-            String suffix = fileName.substring(fileName.lastIndexOf("."));
-            File tmpFile = File.createTempFile(fileName.substring(0, fileName.lastIndexOf(".")), suffix);
-            System.out.println(tmpFile.getName());
-            tmpFile.delete();
+            String url = iFastDfsPhotoUploadService.uploadPhoto(multipartFile);
+            user.setPhoto(url);
+            System.out.println("文件路径：" + url);
         }
         userService.saveUser(user);
         return user;
@@ -53,11 +54,9 @@ public class FormUserController {
     public User addUser(User user,
                         @RequestParam(value = "multipartFile", required = false) MultipartFile multipartFile) throws IOException {
         if (multipartFile != null) {
-            String fileName = multipartFile.getOriginalFilename();
-            String suffix = fileName.substring(fileName.lastIndexOf("."));
-            File tmpFile = File.createTempFile(fileName.substring(0, fileName.lastIndexOf(".")), suffix);
-            System.out.println(tmpFile.getName());
-            tmpFile.delete();
+            String url = iFastDfsPhotoUploadService.uploadPhoto(multipartFile);
+            user.setPhoto(url);
+            System.out.println("文件路径：" + url);
         }
         userService.saveUser(user);
         return user;
@@ -66,11 +65,14 @@ public class FormUserController {
     @PutMapping(value = "/updateUser")
     public void updateUser(User user, @RequestParam(value = "multipartFile", required = false) MultipartFile multipartFile) throws IOException {
         if (multipartFile != null) {
-            String fileName = multipartFile.getOriginalFilename();
-            String suffix = fileName.substring(fileName.lastIndexOf("."));
-            File tmpFile = File.createTempFile(fileName.substring(0, fileName.lastIndexOf(".")), suffix);
-            System.out.println(tmpFile.getName());
-            tmpFile.delete();
+            //如果上传了文件 需要删除用户此前上传过产生的缩略图
+            User u = userService.queryUserById(user.getId());
+            if (u.getPhoto() != null) {
+                iFastDfsPhotoUploadService.deleteThumbPhoto(u.getPhoto());
+            }
+            String url = iFastDfsPhotoUploadService.uploadPhoto(multipartFile);
+            user.setPhoto(url);
+            System.out.println("文件路径：" + url);
         }
         //更新用户信息
         userService.updateUser(user);
@@ -78,6 +80,21 @@ public class FormUserController {
 
     @DeleteMapping(value = "/deleteUserByIds")
     public void delteUserByIds(@RequestParam(value = "ids") Integer[] ids) {
+        List<User> users = new ArrayList<>();
+        User user = null;
+        for (Integer id : ids) {
+            user = userService.queryUserById(id);
+            if (user != null) {
+                users.add(user);
+            }
+        }
+        if (users.size() != 0) {
+            for (User user1 : users) {
+                if (user1.getPhoto() != null) {
+                    iFastDfsPhotoUploadService.deleteThumbPhoto(user.getPhoto());
+                }
+            }
+        }
         userService.deleteByUserIds(ids);
     }
 
