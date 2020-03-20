@@ -73,5 +73,6 @@ public class TestFastDfsFileUpload {
          fastFileStorageClient.deleteFile("group2/M00/00/00/Cg8AFl50q-KANDIDAARYdhmE-ho987_100x100.png");*/
 
         // iFastDfsPhotoUploadService.deleteThumbPhoto("group2/M00/00/00/Cg8AFl50tlCATcn8AARYdmjPtY8661.png");
+        //sssssssssssssssssss
     }
 }
